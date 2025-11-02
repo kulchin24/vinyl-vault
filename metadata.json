@@ -1,0 +1,5 @@
+{
+  "name": "Vinyl Vault",
+  "description": "A beautifully designed application to curate your vinyl record collection and wishlist, inspired by the aesthetics of an art gallery. Search for records using the Discogs API, manage your inventory, and move items from your wishlist to your collection with ease.",
+  "requestFramePermissions": []
+}
