@@ -1,3 +1,5 @@
+export type Priority = 'High' | 'Medium' | 'Low';
+
 export interface RecordItem {
   id: number;
   title: string;
@@ -5,6 +7,7 @@ export interface RecordItem {
   year: number | string;
   cover_image: string;
   discogs_id?: number; // Added for consistency
+  priority?: Priority;
 }
 
 export interface RecordDetail extends RecordItem {
