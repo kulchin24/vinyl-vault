@@ -1,6 +1,6 @@
 import { RecordItem, RecordDetail } from '../types';
 
-const API_TOKEN = 'EkeFpKQtgDVzvxZrdOYuxWjvjdxzdBRfUBfXPfRB';
+const API_TOKEN = process.env.DISCOGS_API_TOKEN;
 const BASE_URL = 'https://api.discogs.com';
 
 export const searchRecords = async (query: string): Promise<RecordItem[]> => {
