@@ -19,6 +19,7 @@ const SearchIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5
 const PlusIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>);
 const AddedIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>);
 const ChevronDownIcon = ({ isOpen }: { isOpen: boolean }) => (<svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 transition-transform transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>);
+const ClearIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>);
 
 
 const Wishlist: React.FC<WishlistProps> = ({ records, inventoryRecords, onMove, onAddToWishlist, onUpdatePriority, onDeleteFromWishlist, onExport }) => {
@@ -44,6 +45,11 @@ const Wishlist: React.FC<WishlistProps> = ({ records, inventoryRecords, onMove, 
     } finally {
       setIsSearching(false);
     }
+  };
+  
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
   };
 
   const handleSelectRecordToAdd = (record: RecordItem) => {
@@ -135,13 +141,25 @@ const Wishlist: React.FC<WishlistProps> = ({ records, inventoryRecords, onMove, 
         </div>
 
         <form onSubmit={handleSearch} className="flex gap-2 mb-6">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search Discogs to add to your wishlist..."
-            className="flex-grow bg-slate-700 text-white placeholder-slate-400 border border-slate-600 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gold-500"
-          />
+          <div className="relative flex-grow">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search Discogs to add to your wishlist..."
+              className="w-full bg-slate-700 text-white placeholder-slate-400 border border-slate-600 rounded-md px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-gold-500"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-white transition-colors"
+                aria-label="Clear search"
+              >
+                <ClearIcon />
+              </button>
+            )}
+          </div>
           <button type="submit" className="flex items-center justify-center gap-2 px-4 py-2 font-semibold text-slate-900 bg-gold-500 rounded-md hover:bg-gold-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gold-500 focus:ring-offset-slate-900 transition-colors" disabled={isSearching}>
             <SearchIcon />
             {isSearching ? 'Searching...' : 'Search'}
