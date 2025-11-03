@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import Inventory from './components/Inventory';
 import Wishlist from './components/Wishlist';
-import { RecordItem } from './types';
+import { RecordItem, Priority } from './types';
 import { generateCsvContent, downloadCsv } from './services/csvService';
 import { getInventory, getWishlist, postData } from './services/googleSheetsService';
 
@@ -52,16 +52,35 @@ const App: React.FC = () => {
     }
   };
 
-  const handleAddToWishlist = async (record: RecordItem) => {
+  const handleDeleteFromWishlist = async (id: number) => {
+    const originalWishlist = [...wishlistRecords];
+    const recordToDelete = originalWishlist.find(r => r.id === id);
+    if (!recordToDelete) return;
+
+    // Optimistic update
+    setWishlistRecords(prev => prev.filter(record => record.id !== id));
+
+    try {
+      await postData({ action: 'DELETE_FROM_WISHLIST', payload: { id } });
+    } catch (err) {
+      console.error("Failed to delete from wishlist:", err);
+      // Revert on failure
+      setWishlistRecords(originalWishlist);
+      alert("Failed to delete record from wishlist. Please try again.");
+    }
+  };
+
+  const handleAddToWishlist = async (record: RecordItem, priority: Priority) => {
     if (wishlistRecords.some(r => r.id === record.id) || inventoryRecords.some(r => r.id === record.id)) {
       return;
     }
     const originalWishlist = [...wishlistRecords];
+    const newRecord = { ...record, priority };
     // Optimistic update
-    setWishlistRecords(prev => [record, ...prev].sort((a, b) => a.artist.localeCompare(b.artist)));
+    setWishlistRecords(prev => [newRecord, ...prev].sort((a, b) => a.artist.localeCompare(b.artist)));
 
     try {
-      await postData({ action: 'ADD_TO_WISHLIST', payload: record });
+      await postData({ action: 'ADD_TO_WISHLIST', payload: newRecord });
     } catch (err) {
       console.error("Failed to add to wishlist:", err);
       setWishlistRecords(originalWishlist);
@@ -88,6 +107,20 @@ const App: React.FC = () => {
     }
   };
 
+  const handleUpdateWishlistPriority = async (id: number, priority: Priority) => {
+    const originalWishlist = [...wishlistRecords];
+    // Optimistic update
+    setWishlistRecords(prev => prev.map(r => r.id === id ? { ...r, priority } : r));
+
+    try {
+      await postData({ action: 'UPDATE_WISHLIST_PRIORITY', payload: { id, priority } });
+    } catch (err) {
+      console.error("Failed to update priority:", err);
+      setWishlistRecords(originalWishlist);
+      alert("Failed to update record priority. Please try again.");
+    }
+  };
+
   const handleExportInventory = () => {
     const csvContent = generateCsvContent(inventoryRecords);
     downloadCsv(csvContent, 'vinyl-inventory.csv');
@@ -98,24 +131,25 @@ const App: React.FC = () => {
     downloadCsv(csvContent, 'vinyl-wishlist.csv');
   };
 
-  const renderSkeleton = () => (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="aspect-square bg-slate-800 rounded-lg animate-pulse"></div>
+  const renderSkeleton = (isWishlist = false) => (
+    <section className="bg-slate-800/30 p-6 rounded-lg border border-slate-700/50">
+      <div className="h-9 w-48 bg-slate-700 rounded-md mb-6 animate-pulse"></div>
+      {isWishlist && <div className="h-10 w-full bg-slate-700 rounded-md mb-6 animate-pulse"></div>}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {Array.from({ length: isWishlist ? 3 : 5 }).map((_, i) => (
+          <div key={i} className="aspect-square bg-slate-800 rounded-lg animate-pulse"></div>
         ))}
-    </div>
+      </div>
+    </section>
   );
 
   return (
     <div className="bg-slate-900 min-h-screen text-white animate-fade-in">
       <Header />
-      <main className="container mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 animate-slide-in-down" style={{ animationDelay: '100ms' }}>
+      <main className="container mx-auto p-4 md:p-8 grid grid-cols-1 gap-12">
+        <div className="animate-slide-in-down" style={{ animationDelay: '100ms' }}>
           {isLoading ? (
-            <section className="bg-slate-800/30 p-6 rounded-lg border border-slate-700/50">
-              <div className="h-9 w-48 bg-slate-700 rounded-md mb-6 animate-pulse"></div>
-              {renderSkeleton()}
-            </section>
+            renderSkeleton()
           ) : error ? (
             <div className="text-center py-10 border-2 border-dashed border-red-500/50 bg-red-500/10 rounded-lg animate-scale-in">
                 <p className="text-red-400 font-semibold">Error</p>
@@ -130,18 +164,14 @@ const App: React.FC = () => {
           )}
         </div>
         <div className="animate-slide-in-down" style={{ animationDelay: '200ms' }}>
-          {isLoading ? (
-             <section className="bg-slate-800/30 p-6 rounded-lg border border-slate-700/50">
-              <div className="h-9 w-48 bg-slate-700 rounded-md mb-6 animate-pulse"></div>
-              <div className="h-10 w-full bg-slate-700 rounded-md mb-6 animate-pulse"></div>
-              <div className="aspect-square bg-slate-800 rounded-lg animate-pulse"></div>
-            </section>
-          ) : error ? null : (
+          {isLoading ? renderSkeleton(true) : error ? null : (
             <Wishlist 
                 records={wishlistRecords}
                 inventoryRecords={inventoryRecords}
                 onMove={handleMoveToInventory}
                 onAddToWishlist={handleAddToWishlist}
+                onUpdatePriority={handleUpdateWishlistPriority}
+                onDeleteFromWishlist={handleDeleteFromWishlist}
                 onExport={handleExportWishlist}
             />
           )}
