@@ -14,16 +14,11 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, 
   useEffect(() => {
     if (isOpen) {
       setIsRendered(true);
-      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = '';
       setTimeout(() => {
         setIsRendered(false);
       }, 300); // Match animation duration
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [isOpen]);
 
   if (!isRendered) {
@@ -40,7 +35,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, 
       role="dialog"
       onClick={onClose}
     >
-      <div className="flex items-center justify-center min-h-full">
+      <div className="flex items-start justify-center min-h-full pt-10">
         <div
           className={`bg-slate-800 rounded-lg shadow-xl w-full max-w-md m-auto border border-slate-700 ${modalAnimation}`}
           onClick={e => e.stopPropagation()}
