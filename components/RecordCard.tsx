@@ -8,6 +8,7 @@ interface RecordCardProps {
   onMove?: () => void;
   onViewDetails?: () => void;
   animationDelay?: number;
+  onEditPriority?: () => void;
 }
 
 const DeleteIcon = () => (
@@ -22,7 +23,13 @@ const CheckIcon = () => (
     </svg>
 );
 
-const RecordCard: React.FC<RecordCardProps> = ({ record, variant, onDelete, onMove, onViewDetails, animationDelay = 0 }) => {
+const EditIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" />
+    </svg>
+);
+
+const RecordCard: React.FC<RecordCardProps> = ({ record, variant, onDelete, onMove, onViewDetails, onEditPriority, animationDelay = 0 }) => {
   const handleActionClick = (e: React.MouseEvent, action?: () => void) => {
     e.stopPropagation();
     action?.();
@@ -49,24 +56,53 @@ const RecordCard: React.FC<RecordCardProps> = ({ record, variant, onDelete, onMo
         <p className="text-sm text-slate-300 drop-shadow-md">{record.artist}</p>
         <p className="text-xs text-slate-400 drop-shadow-md">{record.year}</p>
       </div>
-      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+      
+      {/* Action Buttons */}
+      <div className="absolute top-3 right-3 flex flex-col items-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         {variant === 'inventory' && onDelete && (
           <button 
             onClick={(e) => handleActionClick(e, onDelete)} 
             className="flex items-center justify-center w-10 h-10 bg-red-600/80 text-white rounded-full backdrop-blur-sm hover:bg-red-500 transition-colors"
-            aria-label="Delete record"
+            aria-label="Delete record from collection"
           >
             <DeleteIcon />
           </button>
         )}
-        {variant === 'wishlist' && onMove && (
-          <button 
-            onClick={(e) => handleActionClick(e, onMove)} 
-            className="flex items-center justify-center w-10 h-10 bg-green-600/80 text-white rounded-full backdrop-blur-sm hover:bg-green-500 transition-colors"
-            aria-label="Move to collection"
-          >
-            <CheckIcon />
-          </button>
+        {variant === 'wishlist' && (
+            <>
+                {onMove && (
+                    <button 
+                        onClick={(e) => handleActionClick(e, onMove)} 
+                        className="flex items-center justify-center gap-1.5 h-10 px-4 bg-green-600/80 text-white rounded-full backdrop-blur-sm hover:bg-green-500 transition-colors text-sm font-semibold"
+                        aria-label="Copped! Move to collection"
+                    >
+                        <CheckIcon />
+                        Copped!
+                    </button>
+                )}
+                <div className="flex gap-2 mt-1">
+                    {onEditPriority && (
+                        <button 
+                            onClick={(e) => handleActionClick(e, onEditPriority)}
+                            className="flex items-center justify-center w-8 h-8 bg-sky-600/80 text-white rounded-full backdrop-blur-sm hover:bg-sky-500 transition-colors"
+                            aria-label="Change priority"
+                        >
+                            <EditIcon />
+                        </button>
+                    )}
+                    {onDelete && (
+                         <button 
+                            onClick={(e) => handleActionClick(e, onDelete)}
+                            className="flex items-center justify-center w-8 h-8 bg-red-600/80 text-white rounded-full backdrop-blur-sm hover:bg-red-500 transition-colors"
+                            aria-label="Delete from wishlist"
+                        >
+                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    )}
+                </div>
+            </>
         )}
       </div>
     </div>
