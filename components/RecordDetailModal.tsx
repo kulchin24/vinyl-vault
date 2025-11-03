@@ -34,16 +34,11 @@ const RecordDetailModal: React.FC<RecordDetailModalProps> = ({ recordId, isOpen,
   useEffect(() => {
     if (isOpen) {
       setIsRendered(true);
-      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = '';
       setTimeout(() => {
         setIsRendered(false);
       }, 300); // Match animation duration
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -146,7 +141,7 @@ const RecordDetailModal: React.FC<RecordDetailModalProps> = ({ recordId, isOpen,
 
   return (
     <div className={`fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-40 p-4 overflow-y-auto ${backdropAnimation}`} onClick={onClose}>
-      <div className="flex items-center justify-center min-h-full">
+      <div className="flex items-start justify-center min-h-full pt-10">
         <div 
           className={`bg-slate-800 rounded-lg shadow-2xl w-full max-w-4xl m-auto border border-slate-700 flex flex-col ${modalAnimation}`}
           onClick={e => e.stopPropagation()}
