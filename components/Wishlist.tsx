@@ -159,15 +159,29 @@ const Wishlist: React.FC<WishlistProps> = ({ records, inventoryRecords, onMove, 
                 const isInInventory = inventoryRecords.some(r => r.id === record.id);
                 const isAdded = isInWishlist || isInInventory;
                 return (
-                  <div key={record.id} className="relative group animate-scale-in">
+                  <div 
+                    key={record.id} 
+                    className="relative group animate-scale-in cursor-pointer focus:outline-none focus:ring-2 focus:ring-gold-500 rounded-lg"
+                    onClick={() => setRecordToView(record)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setRecordToView(record)}
+                    aria-label={`View details for ${record.title} by ${record.artist}`}
+                  >
                     <img src={record.cover_image} alt={`${record.artist} - ${record.title}`} className="aspect-square w-full object-cover rounded-lg" />
                     <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-4 text-center rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
                        <h4 className="font-bold text-white text-base leading-tight drop-shadow-md">{record.title}</h4>
                        <p className="text-sm text-slate-300 drop-shadow-md mb-3">{record.artist}</p>
                        <button
-                         onClick={() => isAdded ? setRecordToView(record) : handleSelectRecordToAdd(record)}
-                         className={`flex items-center justify-center h-10 px-4 rounded-full text-sm font-semibold transition-colors w-full ${isAdded ? 'bg-slate-600 text-slate-300 cursor-default' : 'bg-gold-500 text-slate-900 hover:bg-gold-600'}`}
+                         onClick={(e) => {
+                           e.stopPropagation(); // Stop the click from opening the details modal
+                           if (!isAdded) {
+                             handleSelectRecordToAdd(record);
+                           }
+                         }}
+                         className={`flex items-center justify-center h-10 px-4 rounded-full text-sm font-semibold transition-colors w-full ${isAdded ? 'bg-slate-600 text-slate-300 cursor-not-allowed' : 'bg-gold-500 text-slate-900 hover:bg-gold-600'}`}
                          disabled={isAdded}
+                         aria-label={isAdded ? (isInInventory ? 'In your collection' : 'On your wishlist') : `Add ${record.title} to wishlist`}
                        >
                          {isInInventory ? <><AddedIcon/> In Collection</> : isInWishlist ? <><AddedIcon/> On Wishlist</> : <><PlusIcon/> Add</>}
                        </button>
